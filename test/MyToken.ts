@@ -73,4 +73,56 @@ describe("My Token", () => {
       ).to.be.revertedWith("insufficient balance");
     });
   });
+  describe("TransferFrom", () => {
+    it("should emit Approval event", async () => {
+      const signer1 = signers[1];
+      await expect(
+        myTokenC.approve(signer1.address, hre.ethers.parseUnits("10", decimals))
+      )
+        .to.emit(myTokenC, "Approval")
+        .withArgs(signer1.address, hre.ethers.parseUnits("10", decimals));
+    });
+    it("should be reverted with insufficien allowance error", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+      await expect(
+        myTokenC
+          .connect(signer1)
+          .transferFrom(
+            signer0.address,
+            signer1.address,
+            hre.ethers.parseUnits("1", decimals)
+          )
+      ).to.be.revertedWith("insufficient allowance");
+    });
+    //2nd Assignments Test Case
+    it("approve -> transferFrom -> balances updated", async () => {
+      const signer0 = signers[0];
+      const signer1 = signers[1];
+
+      const approveAmount = hre.ethers.parseUnits("10", decimals);
+      const transferAmount = hre.ethers.parseUnits("5", decimals);
+      const initial = mintingAmount * 10n ** decimals;
+
+      await expect(
+        myTokenC.connect(signer0).approve(signer1.address, approveAmount)
+      )
+        .to.emit(myTokenC, "Approval")
+        .withArgs(signer1.address, approveAmount);
+
+      await expect(
+        myTokenC
+          .connect(signer1)
+          .transferFrom(signer0.address, signer1.address, transferAmount)
+      )
+        .to.emit(myTokenC, "Transfer")
+        .withArgs(signer0.address, signer1.address, transferAmount);
+
+      const signer0Balance = await myTokenC.balanceOf(signer0.address);
+      const signer1Balance = await myTokenC.balanceOf(signer1.address);
+
+      expect(signer0Balance).to.equal(initial - transferAmount);
+      expect(signer1Balance).to.equal(transferAmount);
+    });
+  });
 });
