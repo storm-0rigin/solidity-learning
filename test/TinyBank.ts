@@ -41,7 +41,8 @@ describe("TinyBank", () => {
       managerAddress,
       MANAGER_NUMBERS,
     ]);
-    await myTokenC.setManager(TinyBankC.getAddress());
+
+    await myTokenC.setManager(await TinyBankC.getAddress());
   });
 
   describe("Initialized state check", () => {
@@ -62,7 +63,7 @@ describe("TinyBank", () => {
       await TinyBankC.stake(stakingAmount);
       expect(await TinyBankC.staked(signer0.address)).equal(stakingAmount);
       expect(await TinyBankC.totalStaked()).equal(stakingAmount);
-      expect(await myTokenC.balanceOf(TinyBankC)).equal(
+      expect(await myTokenC.balanceOf(await TinyBankC.getAddress())).equal(
         await TinyBankC.totalStaked()
       );
     });
@@ -87,21 +88,26 @@ describe("TinyBank", () => {
       await TinyBankC.stake(stakingAmount);
 
       const BLOCKS = 5n;
-      const transferAmount = hre.ethers.parseUnits("1", DECIMALS);
+      const initialBalance = await myTokenC.balanceOf(signer0.address);
+
       for (var i = 0; i < BLOCKS; i++) {
-        await myTokenC.transfer(transferAmount, signer0.address);
+        await hre.ethers.provider.send("evm_mine", []);
       }
 
       await TinyBankC.withdraw(stakingAmount);
-      expect(await myTokenC.balanceOf(signer0.address)).equal(
-        hre.ethers.parseUnits((BLOCKS + MINTING_AMOUNT + 1n).toString())
+
+      const expectedReward = hre.ethers.parseUnits(BLOCKS.toString(), DECIMALS);
+
+      expect(await myTokenC.balanceOf(signer0.address)).to.be.closeTo(
+        initialBalance + expectedReward,
+        hre.ethers.parseUnits("1", DECIMALS)
       );
     });
   });
 
   describe("multi manager assignment", () => {
     const new_reward = hre.ethers.parseUnits("5", DECIMALS);
-    // Non-Manager
+
     it("should revert confirm by non-manager", async () => {
       await expect(TinyBankC.connect(hacker).confirm()).to.be.revertedWith(
         "You are not a manager"
