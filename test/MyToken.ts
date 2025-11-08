@@ -34,7 +34,6 @@ describe("My Token", () => {
       );
     });
   });
-  // 1MT = 1*10^18
   describe("Mint", () => {
     it("should return 1MT balance for signer 0", async () => {
       const signer0 = signers[0];
@@ -95,7 +94,6 @@ describe("My Token", () => {
           )
       ).to.be.revertedWith("insufficient allowance");
     });
-    //2nd Assignments Test Case
     it("approve -> transferFrom -> balances updated", async () => {
       const signer0 = signers[0];
       const signer1 = signers[1];

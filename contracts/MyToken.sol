@@ -11,7 +11,6 @@ contract MyToken is ManagedAccess {
     string public symbol; 
     uint8 public decimals; 
     uint256 public totalSupply;
-  
     mapping(address => uint256) public balanceOf;
 
     mapping(address => mapping(address => uint256)) public allowance;
@@ -30,7 +29,6 @@ contract MyToken is ManagedAccess {
 
     function approve(address spender, uint256 amount) external {
         allowance[msg.sender][spender] = amount;
-
         emit Approval(spender, amount);
     }
 
@@ -61,7 +59,6 @@ contract MyToken is ManagedAccess {
 
     function transfer(uint256 amount, address to) external {
         require(balanceOf[msg.sender] >= amount, "Insufficient balance");
-
         balanceOf[msg.sender] -= amount;
         balanceOf[to] += amount;
 
