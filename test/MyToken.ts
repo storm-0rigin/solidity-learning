@@ -2,6 +2,7 @@ import hre from "hardhat";
 import { expect } from "chai";
 import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
+import { DECIMALS } from "./constant";
 
 const mintingAmount = 100n;
 const decimals = 18n;
@@ -37,8 +38,8 @@ describe("My Token", () => {
   describe("Mint", () => {
     it("should return 1MT balance for signer 0", async () => {
       const signer0 = signers[0];
-      expect(await myTokenC.balanceOf(signer0)).equal(
-        mintingAmount * 10n ** decimals
+      expect(await myTokenC.balanceOf(signer0.address)).equal(
+        mintingAmount * 10n ** DECIMALS
       );
     });
   });
