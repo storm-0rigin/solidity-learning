@@ -2,7 +2,7 @@ import hre from "hardhat";
 import { expect } from "chai";
 import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-import { DECIMALS } from "./constant";
+import { DECIMALS, MINTING_AMOUNT } from "./constant";
 
 const mintingAmount = 100n;
 const decimals = 18n;
@@ -15,8 +15,8 @@ describe("My Token", () => {
     myTokenC = await hre.ethers.deployContract("MyToken", [
       "MyToken",
       "MT",
-      18,
-      100,
+      DECIMALS,
+      MINTING_AMOUNT,
     ]);
   });
   describe("Basic state value check", () => {
@@ -36,10 +36,12 @@ describe("My Token", () => {
     });
   });
   describe("Mint", () => {
-    it("should return 1MT balance for signer 0", async () => {
+    it("should return initial supply + 1MT balance for signer 0", async () => {
       const signer0 = signers[0];
+      const oneMt = hre.ethers.parseUnits("1", DECIMALS);
+      await myTokenC.mint(oneMt, signer0.address);
       expect(await myTokenC.balanceOf(signer0.address)).equal(
-        mintingAmount * 10n ** DECIMALS
+        mintingAmount * 10n ** DECIMALS + oneMt
       );
     });
   });
