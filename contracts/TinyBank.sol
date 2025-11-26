@@ -11,7 +11,7 @@ interface IMyToken {
     function mint(uint256 amount, address owner) external;
 }
 
-contract TinyBank is MultiManagedAccess {
+contract TinyBank is ManagedAccess {
     event Staked(address from, uint256 amount);
     event Withdraw(uint256 amount, address to);
 
@@ -28,9 +28,8 @@ contract TinyBank is MultiManagedAccess {
     constructor(
         IMyToken _stakingToken,
         address _owner,
-        address[] memory _managers,
-        uint _manager_numbers
-    ) MultiManagedAccess(_owner, _managers, _manager_numbers) {
+        address _manager
+    ) ManagedAccess(_owner, _manager) { 
         stakingToken = _stakingToken;
         rewardPerBlock = defaultRewardPerBlock;
     }
@@ -46,12 +45,12 @@ contract TinyBank is MultiManagedAccess {
         _; 
     }
 
-    function setRewardPerBlock(uint256 _amount) external onlyAllConfirmed {
+    function setRewardPerBlock(uint256 _amount) external onlyOwner {
         rewardPerBlock = _amount;
     }
 
     function stake(uint256 _amount) external updateReward(msg.sender) {
-        require(_amount >= 0, "cannot stake 0 amount");
+        require(_amount > 0, "cannot stake 0 amount");
         stakingToken.transferFrom(msg.sender, address(this), _amount); 
         staked[msg.sender] += _amount;
         totalStaked += _amount;
